@@ -1,5 +1,7 @@
-// Create the base map
-const map = L.map('map').setView([20, 0], 2);
+const map = L.map('map', {
+  minZoom: 1,
+  maxZoom: 10   // allow closer zoom
+}).setView([20, 0], 2);
 
 // Add a base tile layer (OpenStreetMap)
 L.tileLayer(
