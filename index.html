@@ -1,65 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>World Map</title>
-
-  <!-- Leaflet CSS -->
-  
-    <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-    />
-
-    <link rel="stylesheet" href="style.css" />
-
+  <head>
+    <meta charset="UTF-8" />
+    <title>Learn World Map Flags</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Your styles - -->
+    <!-- Leaflet CSS (Vite will handle JS imports in main.js) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <!-- Map container -->
+    <div id="map"></div>
 
-</head>
-<body>
-  <div id="map"></div>
+    <!-- Settings panel (initially hidden, toggled by gear button from JS/CSS) -->
+    <div id="settings-panel" class="settings-panel">
+      <h3>Settings</h3>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  <div id="settings-panel" class="settings-panel">
-    <h3>Settings</h3>
-    <label>
-        <input type="radio" name="basemap" value="streets" checked />
-        Map (no labels)
-    </label>
-    <br />
-    <label>
-        <input type="radio" name="basemap" value="satellite" />
-        Satellite
-    </label>
-    <div style="margin-top:8px;">
+      <!-- Basemap selection -->
+      <div>
+        <strong>Basemap</strong><br />
         <label>
-            <input type="checkbox" id="random-colors-toggle" />
-            Randomize country border colors
+          <input type="radio" name="basemap" value="streets" checked />
+          Map (no labels)
         </label>
-    </div>
-    <div style="margin-top:8px;">
+        <br />
         <label>
-            <input type="checkbox" id="hover-names-toggle" />
-            Show country name on cursor hover (only with cursor)
+          <input type="radio" name="basemap" value="satellite" />
+          Satellite
         </label>
-    </div>
-    <div style="margin-top:8px;">
+      </div>
+
+      <!-- Random border colors -->
+      <div style="margin-top:8px;">
         <label>
-            <input type="checkbox" id="map-names-toggle" />
-            Always show country names on map
+          <input type="checkbox" id="random-colors-toggle" />
+          Randomize country border colors
         </label>
+      </div>
+
+      <div>
+        <strong>Country labels</strong><br>
+        <label>
+          <input type="radio" name="label-mode" value="hide" checked>
+          Hide country labels
+        </label><br>
+        <label>
+          <input type="radio" name="label-mode" value="hover">
+          Show on hover only (only with cursor)
+        </label><br>
+        <label>
+          <input type="radio" name="label-mode" value="always">
+          Show all labels
+        </label>
+      </div>
     </div>
-  </div>
-    <script src="script.js"></script>
-</body>
+
+    <!-- Gear button will be added by JS using a Leaflet control -->
+    <!-- (You already have JS logic for that in main.js / script.js) -->
+
+    <!-- Vite entry point -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>
-

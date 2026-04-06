@@ -77,16 +77,28 @@ html, body {
   pointer-events: none; /* keep clicks on the map */
 }
 
-/* The text box */
+/* The text is drawn around that anchor and centered with transform */
+.country-label.leaflet-div-icon {
+  width: 0;
+  height: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
 .country-label-text {
-  display: inline-block;
-  max-width: 200px;           /* controls when it wraps */
-  text-align: center;        /* center each line */
-  white-space: normal;       /* allow wrapping */
-  color: #ffffff;            /* adjust for background */
-  text-shadow: 0 0 3px #000;
-  font-size: 11px;
-  font-family: sans-serif;
-  font-weight: 600;
-  line-height: 1.2;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  white-space: nowrap;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-family: system-ui, sans-serif;
+  color: #ffffff;
+  text-shadow:
+    0 0 2px rgba(0, 0, 0, 0.8),
+    0 0 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
