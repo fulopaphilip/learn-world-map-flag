@@ -8,7 +8,67 @@ html, body {
 }
 
 .flag-img {
-  max-width: 120px;
+  max-width: 150px;   /* desktop size */
+  width: 100%;        /* fill container up to 150px */
+  height: auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  border-radius: 4px; /* optional, for softer corners */
+  border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  .leaflet-popup-content-wrapper {
+    max-width: 95vw;
+  }
+
+  .leaflet-popup-content {
+    width: auto !important;
+    margin: 12px 16px;
+  }
+
+  .flag-img {
+    width: 20vw;       /* make the image as wide as most of the screen */
+    max-width: 200px;  /* upper limit so it doesn’t explode on large phones */
+    height: auto;
+  }
+}
+
+/* Gear button */
+.settings-control {
+  background: #fff;
+  border-radius: 4px;
+}
+
+.settings-button {
+  display: block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  text-decoration: none;
+  color: #333;
+  font-size: 18px;
+}
+
+/* Settings panel */
+.settings-panel {
+  position: absolute;
+  left: 10px;
+  bottom: 50px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 10px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-family: sans-serif;
+  font-size: 14px;
+  display: none;
+}
+
+.settings-panel.open {
+  display: block;
+}
+
+.settings-panel h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
 }

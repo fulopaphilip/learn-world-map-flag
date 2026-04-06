@@ -15,6 +15,8 @@
 
     <link rel="stylesheet" href="style.css" />
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <!-- Your styles - -->
 
 </head>
@@ -27,8 +29,21 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
+  <div id="settings-panel" class="settings-panel">
+    <h3>Settings</h3>
+    <label>
+        <input type="radio" name="basemap" value="streets" checked />
+        Map (no labels)
+    </label>
+    <br />
+    <label>
+        <input type="radio" name="basemap" value="satellite" />
+        Satellite
+    </label>
+  </div>
 
   <!-- Your script -->
   <script src="script.js"></script>
 </body>
 </html>
+
