@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Learn World Map Flags</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Leaflet CSS (Vite will handle JS imports in main.js) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script type="module" crossorigin src="/learn-world-map-flag/assets/index-OppA7ZSf.js"></script>
+    <link rel="stylesheet" crossorigin href="/learn-world-map-flag/assets/index-38QDMvm-.css">
+  </head>
+  <body>
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Settings panel (initially hidden, toggled by gear button from JS/CSS) -->
+    <div id="settings-panel" class="settings-panel">
+      <h3>Settings</h3>
+
+      <!-- Basemap selection -->
+      <div>
+        <strong>Basemap</strong><br />
+        <label>
+          <input type="radio" name="basemap" value="streets" checked />
+          Map (no labels)
+        </label>
+        <br />
+        <label>
+          <input type="radio" name="basemap" value="satellite" />
+          Satellite
+        </label>
+      </div>
+
+      <!-- Random border colors -->
+      <div style="margin-top:8px;">
+        <label>
+          <input type="checkbox" id="random-colors-toggle" />
+          Randomize country border colors
+        </label>
+      </div>
+
+      <div>
+        <strong>Country labels</strong><br>
+        <label>
+          <input type="radio" name="label-mode" value="hide" checked>
+          Hide country labels
+        </label><br>
+        <label>
+          <input type="radio" name="label-mode" value="hover">
+          Show on hover only (only with cursor)
+        </label><br>
+        <label>
+          <input type="radio" name="label-mode" value="always">
+          Show all labels
+        </label>
+      </div>
+    </div>
+
+    <!-- Gear button will be added by JS using a Leaflet control -->
+    <!-- (You already have JS logic for that in main.js / script.js) -->
+
+    <!-- Vite entry point -->
+  </body>
+</html>
