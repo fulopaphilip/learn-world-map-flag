@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-  base: '/learn-world-map-flag/',
-});
+export default {
+  base: '/learn-world-map-flag/', 
+};
