@@ -33,9 +33,10 @@ So this project is my own solution: a minimal, focused world map built with Leaf
 - **Settings panel:**
   - Gear icon control in the bottom‑left corner  
   - Simple popup panel to switch between map and satellite background  
-- **Adaptive country styling:**
-  - Dark borders on the light map  
-  - White borders on the satellite map, staying white consistently on hover and click  
+- **Polylabel-based label placement** with centroid blending
+- Optional random border colours mode to give each country a stable, unique outline colour.
+- Option to always show country labels on the map, so names remain visible at all times.
+- Switched to an npm/Vite build environment, bundling Leaflet, polylabel, and other dependencies for easier local development and deployment.
 
 The goal is not a full GIS toolkit, but a learning tool: a calm, visual way to explore the world and connect shapes on the map with country names and flags.
 
@@ -45,39 +46,6 @@ The goal is not a full GIS toolkit, but a learning tool: a calm, visual way to e
 - **Leaflet.js** for the interactive map and popups  
 - **GeoJSON** country polygons  
 - **Flag CDN** (SVG flags by ISO 3166‑1 alpha‑2 code)  
-
-No build step or framework is required; everything runs as plain static files in the browser.
-
-## How It Works (High Level)
-
-1. The page initializes a Leaflet map centered on the world.  
-2. A GeoJSON file with all country polygons is loaded and added as a layer.  
-3. Each polygon:
-   - shows a tooltip with the country name on hover  
-   - opens a popup on click with the country name and its flag  
-4. Flags are loaded by constructing the CDN URL from the country’s ISO 2‑letter code.  
-5. A small settings button (gear icon) opens a floating panel to switch between:
-   - a light map background without labels  
-   - a satellite background  
-6. When switching to satellite, all country borders are restyled to white and stay white even on hover, so they remain clearly visible over imagery.
-
-## Running Locally
-
-You can run this project as a simple static site.
-
-1. Clone or download the repository.
-2. From the project folder, start a small HTTP server, for example:
-
-   ```bash
-   # Python 3
-   python -m http.server 8000 --bind 0.0.0.0
-   ```
-
-3. Open in your browser:
-
-   ```text
-   http://localhost:8000
-   ```
 
 ## Future Ideas
 
