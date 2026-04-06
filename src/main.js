@@ -16,6 +16,7 @@ let showNameOnMap = false;
 
 let countriesLayer = null;
 let labelsLayer = null;
+const countryLabels = []; // global
 
 // name -> random border color
 const countryBorderColors = {};
@@ -204,15 +205,17 @@ function formatCountryName(name) {
 }
 
 // ---- GEOJSON LOAD ----
-fetch('countries.geojson')
-  .then(response => response.json())
+
+fetch('public/countries.geojson')
+  .then(r => r.json())
   .then(data => {
+    // Countries layer (borders, hover, click, etc.)
     countriesLayer = L.geoJSON(data, {
       style: countryStyle,
       onEachFeature: onEachCountry
     }).addTo(map);
 
-    // Build labels layer
+    // Labels layer
     labelsLayer = L.layerGroup();
 
     L.geoJSON(data, {
@@ -223,7 +226,7 @@ fetch('countries.geojson')
         const rawName = feature.properties.name || 'Unknown';
         const labelHtml = formatCountryName(rawName);
 
-        const label = L.marker(center, {
+        const labelMarker = L.marker(center, {
           icon: L.divIcon({
             className: 'country-label',
             html: `<div class="country-label-text">${labelHtml}</div>`,
@@ -231,11 +234,51 @@ fetch('countries.geojson')
           })
         });
 
-        labelsLayer.addLayer(label);
+        // approximate size from bounds (used to hide tiny countries when zoomed out)
+        const bounds = layer.getBounds();
+        const size = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
+
+        countryLabels.push({ size, marker: labelMarker });
+        labelsLayer.addLayer(labelMarker);
       }
     });
   });
 
+function updateLabelVisibility() {
+  const z = map.getZoom();
+
+  // example thresholds – tweak these:
+  const smallThreshold = 1000000;  // small countries
+  const mediumThreshold = 100000000;
+
+  countryLabels.forEach(({ size, marker }) => {
+    let visible = true;
+
+    if (z <= 2) {
+      // very zoomed out: only largest countries
+      visible = size >= mediumThreshold;
+    } else if (z === 3) {
+      // a bit closer: hide really tiny ones
+      visible = size >= smallThreshold;
+    } else {
+      // z >= 4: show everything
+      visible = true;
+    }
+
+    if (visible) {
+      if (!labelsLayer.hasLayer(marker)) labelsLayer.addLayer(marker);
+    } else {
+      if (labelsLayer.hasLayer(marker)) labelsLayer.removeLayer(marker);
+    }
+  });
+}
+
+map.on('zoomend', () => {
+  if (showNameOnMap) updateLabelVisibility();
+});
+
+// after building labels and enabling "always show" mode:
+updateLabelVisibility();
 // ---- INTERACTION PER COUNTRY ----
 function onEachCountry(feature, layer) {
   const name = feature.properties.name || 'Unknown';
