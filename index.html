@@ -17,7 +17,7 @@
     <!-- Map container -->
     <div id="map"></div>
 
-    <!-- Settings panel (initially hidden, toggled by gear button from JS/CSS) -->
+        <!-- Settings panel (initially hidden, toggled by gear button from JS/CSS) -->
     <div id="settings-panel" class="settings-panel">
       <h3>Settings</h3>
 
@@ -60,6 +60,37 @@
       </div>
     </div>
 
+    <button id="tab-learn">Learn</button>
+    <button id="tab-search">Search</button>
+
+    <!--  App container for UI elements (menus, search, settings) -->
+    <div id="app">
+        <!-- Top-left menubar -->
+        <div id="top-menu">
+          <button class="menu-btn active" data-mode="learn">Learn</button>
+          <button class="menu-btn" data-mode="search">Search</button>
+          <button class="menu-btn" data-mode="game">Game</button>
+        </div>
+
+        <!-- Search panel (hidden by default) -->
+        <div id="search-panel" class="hidden">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Search country..."
+            autocomplete="off"
+          />
+          <div id="search-results"></div>
+        </div>
+
+        <!-- Map and existing settings panel -->
+        <div id="map"></div>
+
+        <div id="settings-panel" class="settings-panel">
+          <!-- your existing settings content -->
+        </div>
+      </div>
+    
     <!-- Gear button will be added by JS using a Leaflet control -->
     <!-- (You already have JS logic for that in main.js / script.js) -->
 

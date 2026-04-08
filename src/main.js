@@ -16,6 +16,9 @@ let showNameOnMap = false;
 
 let countriesLayer = null;
 let labelsLayer = null;
+let lastSelectedLayer = null;
+const countryIndex = new Map();
+const countriesForSearch = []; // { name, iso2, bounds }
 const countryLabels = []; // global
 
 // name -> random border color
@@ -206,14 +209,32 @@ function formatCountryName(name) {
 
 // ---- GEOJSON LOAD ----
 
-fetch('public/countries.geojson')
+fetch('countries.geojson')
   .then(r => r.json())
   .then(data => {
-    // Countries layer (borders, hover, click, etc.)
-    countriesLayer = L.geoJSON(data, {
-      style: countryStyle,
-      onEachFeature: onEachCountry
-    }).addTo(map);
+    // 1) Countries layer: borders + interactions
+  countriesLayer = L.geoJSON(data, {
+  style: countryStyle,
+  onEachFeature: function (feature, layer) {
+    onEachCountry(feature, layer);
+
+    const name = (feature.properties.name || 'Unknown').trim(); // <--- trim
+    const rawIso2Prop =
+      feature.properties['ISO3166-1-Alpha-2'] ||
+      feature.properties.ISO_A2 ||
+      '';
+    const rawIso2 = isoOverrides[name] || rawIso2Prop;
+    const iso2 = rawIso2.toLowerCase();
+
+    countryIndex.set(name, { feature, layer }); // <--- key is exactly `name`
+
+    countriesForSearch.push({
+      name,         // <--- same `name`
+      iso2,
+      bounds: layer.getBounds()
+    });
+  }
+}).addTo(map);
 
     // Labels layer
     labelsLayer = L.layerGroup();
@@ -242,22 +263,222 @@ fetch('public/countries.geojson')
         labelsLayer.addLayer(labelMarker);
       }
     });
+    console.log('countriesForSearch length:', countriesForSearch.length);
   });
+
+const topMenu = document.getElementById('top-menu');
+const searchPanel = document.getElementById('search-panel');
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+let currentMode = 'learn'; // default
+
+function setMode(mode) {
+  currentMode = mode;
+
+  // toggle active button
+  document.querySelectorAll('#top-menu .menu-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  // panels visibility
+  if (mode === 'search') {
+    searchPanel.classList.remove('hidden');
+    searchInput.focus();
+  } else {
+    searchPanel.classList.add('hidden');
+  }
+
+  // learn/game share same map for now; game mode is just reserved
+}
+
+topMenu.addEventListener('click', e => {
+  const btn = e.target.closest('.menu-btn');
+  if (!btn) return;
+  setMode(btn.dataset.mode);
+});
+
+let currentMatches = [];
+let selectedIndex = -1;
+
+function renderSearchResults(query) {
+  searchResults.innerHTML = '';
+
+
+  if (!query) return;
+
+  const q = query.toLowerCase();
+
+  const matches = countriesForSearch
+    .filter(c => c.name.toLowerCase().includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .slice(0, 50);
+
+  currentMatches = matches;
+
+  matches.forEach((country, idx) => {
+    const item = document.createElement('div');
+    item.className = 'search-item';
+    item.dataset.index = idx;
+
+    const flagUrl = country.iso2
+      ? `https://flagcdn.com/${country.iso2}.svg`
+      : '';
+
+    item.innerHTML = `
+      ${flagUrl ? `<img src="${flagUrl}" alt="">` : ''}
+      <span>${country.name}</span>
+    `;
+
+    item.addEventListener('click', () => {
+      selectCountryFromSearch(idx);
+    });
+
+    searchResults.appendChild(item);
+  });
+}
+
+function selectCountryFromSearch(index) {
+  if (index < 0 || index >= currentMatches.length) return;
+
+  const { name } = currentMatches[index];
+  const entry = countryIndex.get(name);
+  if (!entry) return;
+
+  const { feature, layer } = entry;
+
+  // 1) Reset previous selection completely
+  if (lastSelectedLayer) {
+    countriesLayer.resetStyle(lastSelectedLayer);
+    lastSelectedLayer.closeTooltip && lastSelectedLayer.closeTooltip();
+    lastSelectedLayer.unbindTooltip && lastSelectedLayer.unbindTooltip();
+  }
+
+  // 2) Zoom to main part
+  const bounds = getMainBounds(layer);
+  if (bounds && bounds.isValid && bounds.isValid()) {
+    map.flyToBounds(bounds, {
+      padding: [20, 20],
+      animate: true,
+      duration: 1.0
+    });
+  }
+
+  // 3) Highlight and label only NEW layer
+  const base = countryStyle(feature);
+  layer.setStyle({
+    color: base.color,
+    weight: base.weight + 1,
+    fillOpacity: 0.4
+  });
+
+  const countryName = feature.properties.name || 'Unknown';
+  const labelPos = getMainCenter(layer);
+  layer.bindTooltip(countryName, { sticky: true, direction: 'center' })
+       .openTooltip(labelPos);
+
+  // 4) Remember current selection
+  lastSelectedLayer = layer;
+}
+
+function updateSearchSelection() {
+  const items = searchResults.querySelectorAll('.search-item');
+  items.forEach((el, i) => {
+    el.classList.toggle('active', i === selectedIndex);
+  });
+}
+
+function getMainPartLatLngs(layer) {
+  const latlngs = layer.getLatLngs();
+
+  // Simple Polygon
+  if (!Array.isArray(latlngs[0])) {
+    return latlngs;
+  }
+
+  // MultiPolygon-like: choose part with largest area
+  let maxArea = 0;
+  let mainPart = latlngs[0];
+
+  latlngs.forEach(part => {
+    const ring = Array.isArray(part[0]) ? part[0] : part;
+    if (!ring || ring.length < 3) return;
+
+    let area = 0;
+    for (let i = 0; i < ring.length; i++) {
+      const p1 = ring[i];
+      const p2 = ring[(i + 1) % ring.length];
+      area += (p1.lng * p2.lat) - (p2.lng * p1.lat);
+    }
+    area = Math.abs(area) / 2;
+
+    if (area > maxArea) {
+      maxArea = area;
+      mainPart = ring;
+    }
+  });
+
+  return mainPart;
+}
+
+function getMainBounds(layer) {
+  const mainPart = getMainPartLatLngs(layer);
+  const tempPoly = L.polygon(mainPart);
+  return tempPoly.getBounds();
+}
+
+function getMainCenter(layer) {
+  return getMainBounds(layer).getCenter();
+}
+
+searchInput.addEventListener('input', () => {
+  if (currentMode !== 'search') return;
+  renderSearchResults(searchInput.value);
+});
+
+// keyboard navigation on the input
+searchInput.addEventListener('keydown', e => {
+  if (currentMode !== 'search') return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (currentMatches.length === 0) return;
+    selectedIndex = (selectedIndex + 1) % currentMatches.length;
+    updateSearchSelection();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (currentMatches.length === 0) return;
+    selectedIndex =
+      (selectedIndex - 1 + currentMatches.length) % currentMatches.length;
+    updateSearchSelection();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (selectedIndex === -1 && currentMatches.length > 0) {
+      selectCountryFromSearch(0);
+    } else {
+      selectCountryFromSearch(selectedIndex);
+    }
+  }
+});
 
 function updateLabelVisibility() {
   const z = map.getZoom();
 
   // example thresholds – tweak these:
-  const smallThreshold = 1000000;  // small countries
-  const mediumThreshold = 100000000;
+  const largeThreshold = 4_000_000;   // only very large countries
+  const mediumThreshold = 1_500_000;  // medium and large
+  const smallThreshold = 100_000;     // hide only very tiny ones
 
   countryLabels.forEach(({ size, marker }) => {
     let visible = true;
 
     if (z <= 2) {
-      // very zoomed out: only largest countries
+      // very very zoomed out: only huge countries
+      visible = size >= largeThreshold;
+    } else if (z <= 4) {
+      // very zoomed out: only large ountries
       visible = size >= mediumThreshold;
-    } else if (z === 3) {
+    } else if (z <= 5) {
       // a bit closer: hide really tiny ones
       visible = size >= smallThreshold;
     } else {
@@ -449,6 +670,9 @@ document.addEventListener('change', function (e) {
       if (labelsLayer && !map.hasLayer(labelsLayer)) {
         labelsLayer.addTo(map);
       }
+      // run once immediately with current zoom
+      updateLabelVisibility();
+      
     } else if (mode === 'hide') {
       if (labelsLayer && map.hasLayer(labelsLayer)) {
         map.removeLayer(labelsLayer);
